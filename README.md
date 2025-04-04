@@ -75,7 +75,7 @@ Configuration example:
 ```
 "taiga-mcp": {
       "command": "node",
-      "args": ["C:\\path\\to\\your\\project\\mcpTAIGA\\src\\index.js"]
+      "args": ["C:\\path\\to\\mcpTAIGA\\src\\index.js"]
     }
 ```
 
