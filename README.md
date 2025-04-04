@@ -70,6 +70,28 @@ The server provides the following tools:
 
 More coming soon...
 
+Configuration example:
+
+```
+"taiga-mcp": {
+      "command": "node",
+      "args": ["C:\\path\\to\\your\\project\\mcpTAIGA\\src\\index.js"]
+    }
+```
+
+With WSL:
+
+```
+"taiga-mcp": {
+      "command": "wsl.exe",
+      "args": [
+        "bash",
+        "-c",
+        "cd /home/user/mcpTAIGA && /usr/bin/node src/index.js"
+      ]
+    }
+```
+
 ### Example Prompts
 
 Here are some example natural language prompts you can use with an LLM that supports MCP:
