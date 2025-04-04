@@ -35,6 +35,7 @@ An MCP (Model Context Protocol) server that allows you to interact with Taiga us
    TAIGA_API_URL=https://api.taiga.io/api/v1
    TAIGA_USERNAME=your_username
    TAIGA_PASSWORD=your_password
+   #OPENAI_API_KEY=your_openai_api_key
    ```
 
 ## Usage
@@ -46,6 +47,12 @@ npm start
 ```
 
 The server will start and listen for MCP requests via standard input/output.
+
+If you don't use Claude Desktop, Cursor, Windsurf or any client to use the MCP server, you can setup the OPENAI_API_KEY in `.env` file and execute:
+
+```
+node openaiClient.js
+```
 
 ### Connecting to the MCP Server
 
@@ -60,6 +67,8 @@ The server provides the following tools:
 3. `getProject` - Get detailed information about a specific project
 4. `createUserStory` - Create a new user story in a project
 5. `listUserStories` - List all user stories in a project
+
+More coming soon...
 
 ### Example Prompts
 
