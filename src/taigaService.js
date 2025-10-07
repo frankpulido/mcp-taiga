@@ -31,6 +31,36 @@ export class TaigaService {
   }
 
   /**
+   * Create a new project
+   * @param {Object} projectData - Project data
+   * @param {string} projectData.name - Project name
+   * @param {string} [projectData.description] - Project description
+   * @param {boolean} [projectData.is_private] - Whether project is private (default: false)
+   * @param {string} [projectData.creation_template] - Template to use (default: 1 = Kanban)
+   * @returns {Promise<Object>} - Created project
+   */
+  async createProject(projectData) {
+    try {
+      const client = await createAuthenticatedClient();
+      
+      // Set defaults
+      const data = {
+        name: projectData.name,
+        description: projectData.description || '',
+        is_private: projectData.is_private || false,
+        creation_template: projectData.creation_template || 1, // Kanban template
+        ...projectData
+      };
+      
+      const response = await client.post('/projects', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create project:', error.message);
+      throw new Error('Failed to create project in Taiga');
+    }
+  }
+
+  /**
    * Get details of a specific project
    * @param {string} projectId - Project ID or slug
    * @returns {Promise<Object>} - Project details

@@ -18,6 +18,7 @@ import { BaseGenerator } from './TaskGenerators/BaseGenerator.js';
 import readline from 'readline';
 import path from 'path';
 import fs from 'fs';
+import { spawn, execSync } from 'child_process';
 
 export class TaigaProjectAgent {
   constructor() {
@@ -38,6 +39,9 @@ export class TaigaProjectAgent {
     try {
       console.log('🤖 Universal Taiga Project Agent');
       console.log('================================\n');
+      
+      // Step 0: Ensure MCP server is running
+      await this.ensureMCPServerRunning();
       
       // Step 1: Interactive project discovery
       await this.discoverProject();
@@ -156,11 +160,19 @@ export class TaigaProjectAgent {
     projects.forEach((project, index) => {
       console.log(`  ${index + 1}. ${project.name} (${project.slug})`);
     });
+    console.log(`  ${projects.length + 1}. 🆕 Create new project`);
     
-    const projectChoice = await this.ask(`\nSelect project (1-${projects.length}):`);
-    const selectedProject = projects[parseInt(projectChoice) - 1];
+    const projectChoice = await this.ask(`\nSelect project or create new (1-${projects.length + 1}):`);
+    const choiceIndex = parseInt(projectChoice) - 1;
     
-    if (!selectedProject) {
+    let selectedProject;
+    
+    if (choiceIndex === projects.length) {
+      // Create new project
+      selectedProject = await this.createNewProject();
+    } else if (choiceIndex >= 0 && choiceIndex < projects.length) {
+      selectedProject = projects[choiceIndex];
+    } else {
       throw new Error('Invalid project selection');
     }
     
@@ -178,18 +190,32 @@ export class TaigaProjectAgent {
   async setupGenerators() {
     console.log('\n🏭 Setting up task generators...');
     
-    // Import generators dynamically based on what's needed
+    // Import generators dynamically based on what's needed and what's available
     if (this.sources.git) {
-      const { GitHistoryGenerator } = await import('./TaskGenerators/GitHistoryGenerator.js');
-      this.generators.push(new GitHistoryGenerator(this.sources.git, this.config));
+      try {
+        const { GitHistoryGenerator } = await import('./TaskGenerators/GitHistoryGenerator.js');
+        this.generators.push(new GitHistoryGenerator(this.sources.git, this.config));
+        console.log('✅ Git history generator loaded');
+      } catch (error) {
+        console.log('⚠️ Git history generator not available');
+      }
     }
     
     if (this.config.generateCodeReview && this.config.projectDir) {
-      const { CodeReviewGenerator } = await import('./TaskGenerators/CodeReviewGenerator.js');
-      this.generators.push(new CodeReviewGenerator(this.config.projectDir, this.config));
+      try {
+        const { CodeReviewGenerator } = await import('./TaskGenerators/CodeReviewGenerator.js');
+        this.generators.push(new CodeReviewGenerator(this.config.projectDir, this.config));
+        console.log('✅ Code review generator loaded');
+      } catch (error) {
+        console.log('⚠️ Code review generator not available (will be implemented in Phase 3)');
+      }
     }
     
-    console.log(`✅ ${this.generators.length} generators ready`);
+    if (this.generators.length === 0) {
+      console.log('⚠️ No generators available - creating basic project structure only');
+    } else {
+      console.log(`✅ ${this.generators.length} generators ready`);
+    }
   }
 
   /**
@@ -266,6 +292,126 @@ export class TaigaProjectAgent {
 
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Ensure MCP server is running, start if needed
+   */
+  async ensureMCPServerRunning() {
+    console.log('🔍 Checking MCP server status...');
+    
+    if (this.isMCPServerRunning()) {
+      console.log('✅ MCP server is already running');
+      return;
+    }
+    
+    console.log('⚠️ MCP server is not running');
+    console.log('The Universal Taiga Agent requires the MCP server to communicate with Taiga.\n');
+    
+    const startServer = await this.askBoolean('Start MCP server automatically (`npm start`)?');
+    
+    if (startServer) {
+      console.log('🚀 Starting MCP server...');
+      try {
+        await this.startMCPServer();
+        console.log('✅ MCP server started successfully');
+      } catch (error) {
+        console.error(`❌ Failed to start MCP server: ${error.message}`);
+        throw new Error('MCP server startup failed');
+      }
+    } else {
+      console.log('\n📝 Please start the MCP server manually:');
+      console.log('   1. Open a new terminal window');
+      console.log('   2. Navigate to this directory:');
+      console.log(`      cd ${process.cwd()}`);
+      console.log('   3. Run: npm start');
+      console.log('   4. Return here and press Enter to continue\n');
+      
+      await this.ask('Press Enter when MCP server is running...');
+      
+      // Verify server is now running
+      if (!this.isMCPServerRunning()) {
+        throw new Error('MCP server is still not running. Please start it manually and try again.');
+      }
+      
+      console.log('✅ MCP server detected, continuing...');
+    }
+  }
+
+  /**
+   * Check if MCP server is currently running
+   */
+  isMCPServerRunning() {
+    try {
+      // Check for npm start process
+      const result = execSync('ps aux | grep "npm start" | grep -v grep', { encoding: 'utf8' });
+      return result.trim().length > 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Start the MCP server
+   */
+  async startMCPServer() {
+    return new Promise((resolve, reject) => {
+      // Start npm start in background
+      const mcpProcess = spawn('npm', ['start'], {
+        detached: true,
+        stdio: 'ignore',
+        cwd: process.cwd()
+      });
+      
+      mcpProcess.unref(); // Allow parent to exit
+      
+      // Give server time to start
+      setTimeout(() => {
+        if (this.isMCPServerRunning()) {
+          resolve();
+        } else {
+          reject(new Error('Server failed to start within timeout'));
+        }
+      }, 3000);
+    });
+  }
+
+  /**
+   * Create a new Taiga project interactively
+   */
+  async createNewProject() {
+    console.log('\n🆕 Creating New Taiga Project');
+    console.log('==============================');
+    
+    const projectName = await this.ask('Project name:');
+    const projectDescription = await this.ask('Project description (optional):');
+    const isPrivate = await this.askBoolean('Make project private?');
+    
+    console.log('\n🛠️ Creating project in Taiga...');
+    
+    try {
+      const projectData = {
+        name: projectName,
+        description: projectDescription || `Project for ${projectName} development and management.`,
+        is_private: isPrivate,
+        creation_template: 1 // Kanban template
+      };
+      
+      const newProject = await this.taigaService.createProject(projectData);
+      
+      console.log(`✅ Created project: ${newProject.name}`);
+      console.log(`🔗 URL: https://tree.taiga.io/project/${newProject.slug}/`);
+      console.log(`🏧 Slug: ${newProject.slug}`);
+      
+      // Small delay to let the project initialize
+      await this.delay(2000);
+      
+      return newProject;
+      
+    } catch (error) {
+      console.error(`❌ Failed to create project: ${error.message}`);
+      throw new Error('Project creation failed. Please create manually in Taiga web interface.');
+    }
   }
 }
 
