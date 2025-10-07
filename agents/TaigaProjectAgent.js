@@ -30,6 +30,8 @@ export class TaigaProjectAgent {
       input: process.stdin,
       output: process.stdout
     });
+    this.serverStartedByUs = false;
+    this.serverProcessPid = null;
   }
 
   /**
@@ -66,6 +68,29 @@ export class TaigaProjectAgent {
       throw error;
     } finally {
       this.rl.close();
+      await this.cleanup();
+    }
+  }
+
+  /**
+   * Cleanup: stop server if we started it
+   */
+  async cleanup() {
+    if (this.serverStartedByUs && this.isMCPServerRunning()) {
+      console.log('\n🧹 Cleaning up...');
+      const stopServer = await this.askBoolean('Stop MCP server (started by agent)?');
+      
+      if (stopServer) {
+        console.log('🛑 Stopping MCP server...');
+        try {
+          execSync('pkill -f "npm start"');
+          console.log('✅ Server stopped');
+        } catch (error) {
+          console.log('⚠️ Server may still be running');
+        }
+      } else {
+        console.log('ℹ️ Server left running (you can stop it manually with: pkill -f "npm start")');
+      }
     }
   }
 
@@ -314,6 +339,7 @@ export class TaigaProjectAgent {
       console.log('🚀 Starting MCP server...');
       try {
         await this.startMCPServer();
+        this.serverStartedByUs = true;
         console.log('✅ MCP server started successfully');
       } catch (error) {
         console.error(`❌ Failed to start MCP server: ${error.message}`);
