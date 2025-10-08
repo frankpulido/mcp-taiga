@@ -160,7 +160,7 @@ export class TaigaProjectAgent {
         this.config.projectInfo?.roadmapFiles?.[0];
       
       if (roadmapPath && fs.existsSync(roadmapPath)) {
-        // We'll implement RoadmapAnalyzer next
+        this.sources.roadmap = roadmapPath;
         console.log(`✅ Roadmap analyzer ready: ${path.basename(roadmapPath)}`);
       }
     }
@@ -223,6 +223,16 @@ export class TaigaProjectAgent {
         console.log('✅ Git history generator loaded');
       } catch (error) {
         console.log('⚠️ Git history generator not available');
+      }
+    }
+    
+    if (this.sources.roadmap) {
+      try {
+        const { RoadmapGenerator } = await import('./TaskGenerators/RoadmapGenerator.js');
+        this.generators.push(new RoadmapGenerator(this.sources.roadmap, this.config));
+        console.log('✅ Roadmap generator loaded');
+      } catch (error) {
+        console.log('⚠️ Roadmap generator not available:', error.message);
       }
     }
     

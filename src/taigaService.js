@@ -165,6 +165,24 @@ export class TaigaService {
   }
 
   /**
+   * Get project members
+   * @param {string} projectId - Project ID
+   * @returns {Promise<Array>} - List of project members with user details
+   */
+  async getProjectMembers(projectId) {
+    try {
+      const client = await createAuthenticatedClient();
+      const response = await client.get(`/projects/${projectId}`);
+      
+      // Project details include members array
+      return response.data.members || [];
+    } catch (error) {
+      console.error(`Failed to get project members for ${projectId}:`, error.message);
+      return [];
+    }
+  }
+
+  /**
    * Create a new task associated with a user story
    * @param {Object} taskData - Task data
    * @param {string} taskData.project - Project ID

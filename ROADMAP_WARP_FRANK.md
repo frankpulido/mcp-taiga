@@ -85,7 +85,7 @@ Transformed from **single-use script** → **universal project agent**
 TaskGenerators/
 ├── BaseGenerator.js         # Common functionality & patterns
 ├── GitHistoryGenerator.js   # Git → Taiga task conversion
-├── [Future] RoadmapGenerator.js
+├── ✅ RoadmapGenerator.js   # Roadmap → Taiga task conversion
 ├── [Future] FigmaGenerator.js
 └── [Future] CodeReviewGenerator.js
 ```
@@ -134,7 +134,7 @@ Server Management: Auto-start server? Stop after completion?
 
 #### **Meta-Achievement Unlocked:**
 🎉 **Successfully used the Universal Agent to manage its own development!**
-🔗 **Live Demo**: https://tree.taiga.io/project/frankpulido-universal-taiga-project-agent/
+🔗 **Live Demo**: https://tree.taiga.io/project/frankpulido-mcp-taiga/
 
 ---
 
@@ -210,37 +210,149 @@ After successfully using the agent on itself, we identified and implemented crit
 10. **✅ Production Ready**: Tested on multiple project types
 
 ### **🚧 Current Limitations:**
-1. **Single Generator**: Only GitHistoryGenerator implemented
-2. **Documentation Parsing**: RoadmapGenerator skeleton only
-3. **Figma Integration**: Framework ready, implementation pending  
-4. **Task Relationships**: Parent-child task hierarchy needs work
-5. **Bulk Operations**: No batch update or synchronization features
-6. **Inactivity Timeout**: Server cleanup after long inactivity not yet automated
+1. **Figma Integration**: Framework ready, implementation pending  
+2. **Task Relationships**: Parent-child task hierarchy needs work
+3. **Bulk Operations**: No batch update or synchronization features (beyond existing bulk-assign utility)
+4. **Inactivity Timeout**: Server cleanup after long inactivity not yet automated
+5. **Documentation Generator**: Framework ready, implementation pending
 
 ---
 
 ## 🗺️ **Future Roadmap**
 
-### **🎯 Phase 3: Content Source Expansion** *(Priority: High)*
+### **✅ Phase 3: Content Source Expansion** *(In Progress)*
 **Timeline:** 2-3 weeks  
 **Goal:** Multi-source task generation from various project artifacts
 
-#### **3.1: Roadmap File Parser**
+#### **✅ 3.1: Roadmap File Parser** *(Completed: October 7, 2025 evening)*
 ```javascript
 RoadmapGenerator.js:
-✨ Parse PROJECT_ROADMAP.md, TODO.md, FEATURES.md
-✨ Extract phases, user stories, technical requirements
-✨ Map completion status based on git correlation
-✨ Generate epics with proper dependencies
+✅ Parse PROJECT_ROADMAP.md, TODO.md, FEATURES.md
+✅ Extract phases, user stories, technical requirements
+✅ Map completion status based on emoji indicators (✅, 🚧)
+✅ Generate epics with proper dependencies
+✅ Intelligent markdown parsing (bullets, code blocks, headers)
+✅ Sanitization and formatting for Taiga compatibility
 ```
 
-#### **3.2: Code Review Generator**  
+**Features Implemented:**
+- **Phase Detection**: Automatically extracts `### Phase X` sections as Epics
+- **Status Recognition**: ✅ = completed, 🚧 = in-progress, default = new
+- **Feature Extraction**: Parses `#### Feature` sections as User Stories
+- **Action Items**: Converts checkboxes, TODO comments, and numbered lists to Tasks
+- **Smart Parsing**: Handles markdown formatting, code blocks, and bullet points
+- **Limits & Safety**: Caps output (15 features, 20 tasks) to avoid overwhelming
+
+**Test Results:**
+```
+📊 Tested on ROADMAP_WARP_FRANK.md:
+✅ 8 Epics (Phases) extracted
+✅ 15 User Stories (Features) extracted  
+✅ 20 Tasks (Action Items) extracted
+✅ Total: 43 items parsed successfully
+```
+
+#### **✅ 3.2: Code Review Generator** *(Enhanced: October 8, 2025)*
 ```javascript
 CodeReviewGenerator.js:
-✨ Analyze codebase for technical debt
-✨ Generate quality improvement tasks
-✨ Framework-specific suggestions (Laravel policies, React tests)
-✨ Security audit task generation
+✅ Analyze codebase for technical debt
+✅ Generate quality improvement tasks
+✅ Framework-specific suggestions (Laravel policies, React tests)
+✅ Security audit task generation
+✅ Test coverage analysis
+✅ Documentation gap detection
+✅ Security pattern scanning
+✅ Complexity analysis
+✅ Proper User Story formatting ("As a... I would like to... so that")
+✅ Project boundary validation and backup directory exclusion
+✅ Enhanced source attribution and file tracking
+✅ Task vs User Story classification
+```
+
+**Features Implemented:**
+- **Test Coverage Analysis**: Detects files without tests, suggests test infrastructure
+- **Documentation Scanner**: Finds files lacking JSDoc/PHPDoc/docstrings
+- **Security Patterns**: Scans for hardcoded credentials, SQL injection, eval() usage
+- **Complexity Detection**: Identifies functions >50 lines needing refactoring
+- **Framework-Specific Tasks**: Laravel policies, React PropTypes, etc.
+- **Dependency Checks**: Validates package.json/composer.json structure
+- **🆕 Agile Compliance**: Proper "As a... I would like to... so that" User Story format
+- **🆕 Project Isolation**: Prevents cross-project contamination with boundary validation
+- **🆕 Backup Exclusion**: Skips `*backup 1`, `*backup 2`, `.backup`, etc. directories
+- **🆕 Enhanced Attribution**: All tasks include source and related files information
+
+**Test Results:**
+```
+📊 Tested on mcpTAIGA project:
+✅ 20 files analyzed
+✅ 4,233 lines of code scanned
+✅ 1 user story generated (Test Infrastructure)
+✅ 5 tasks generated (Documentation)
+✅ Total: 6 code quality improvement items
+✅ 100% proper User Story format compliance
+✅ Zero backup directory contamination
+```
+
+#### **✅ 3.2.1: Solo Team Member Auto-Assignment** *(Completed: October 7, 2025 evening)*
+```javascript
+BaseGenerator.js:
+✅ Auto-assign ALL tasks when project has only one team member
+✅ Smart fallback logic (solo → author matching → unassigned)
+✅ Works with all generators (Git, Roadmap, Code Review)
+✅ Zero configuration required
+```
+
+**Features Implemented:**
+- **Solo Project Detection**: Automatically detects single-member teams
+- **Universal Assignment**: All tasks assigned regardless of source or author
+- **Multi-Team Preserved**: Teams with 2+ members use existing author matching
+- **Edge Cases Handled**: Empty teams, null authors, no configuration needed
+
+**Impact:**
+```
+📊 AppointmentManager Project:
+✅ Team members: 1 (Frank Pulido)
+✅ Before: ~53% tasks assigned
+✅ After: 100% tasks assigned
+✅ Manual work: 0 (fully automated)
+```
+
+#### **✅ 3.2.2: Bulk Assignment Utility** *(Completed: October 7, 2025 evening)*
+```javascript
+utils/bulk-assign-tasks.js:
+✅ Interactive task assignment tool
+✅ Fix existing projects with unassigned tasks
+✅ Preview before making changes
+✅ Rate-limited API calls
+✅ Integrated as permanent MCP utility
+```
+
+**Features Implemented:**
+- **Project Selection**: Interactive list of all accessible projects
+- **Team Detection**: Shows team size and members
+- **Smart Assignment**: Auto-assigns to sole member or first member
+- **Preview**: Shows all unassigned tasks before confirmation
+- **Safety**: Requires explicit confirmation, rate-limited execution
+- **Reporting**: Detailed success/failure summary
+
+**Integration:**
+```bash
+# Added to package.json scripts
+npm run bulk-assign
+
+# Created utils/ folder structure
+utils/
+├── bulk-assign-tasks.js  # Main utility
+└── README.md             # Comprehensive documentation
+```
+
+**Real-World Test:**
+```
+📊 AppointmentManager Project:
+✅ 25 unassigned tasks found
+✅ 25 successfully assigned (100%)
+✅ Time: 7.5 seconds
+✅ Result: 100% assignment rate
 ```
 
 #### **3.3: Documentation Generator**
@@ -443,9 +555,10 @@ ProjectManagement/
 2. **✅ Project Creation**: ~~Add interactive project creation~~ ✅ DONE
 3. **✅ Server Management**: ~~Add health checking and lifecycle management~~ ✅ DONE
 4. **✅ Documentation**: ~~Create comprehensive README~~ ✅ DONE
-5. **🔧 Fix Edge Cases**: Handle projects without git, empty repositories  
-6. **📝 Create Templates**: Project-specific task templates
-7. **🧪 Add Basic Tests**: Unit tests for core functionality
+5. **✅ CodeReviewGenerator Enhancement**: ~~Fix project boundary issues and Agile compliance~~ ✅ DONE (October 8, 2025)
+6. **🔧 Fix Edge Cases**: Handle projects without git, empty repositories  
+7. **📝 Create Templates**: Project-specific task templates
+8. **🧪 Add Basic Tests**: Unit tests for core functionality
 
 ### **Next Sprint (2 weeks):**  
 1. **🗂️ RoadmapGenerator**: Implement markdown parsing logic

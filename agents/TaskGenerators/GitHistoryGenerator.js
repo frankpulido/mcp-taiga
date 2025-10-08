@@ -120,7 +120,8 @@ export class GitHistoryGenerator extends BaseGenerator {
           title: this.sanitizeCommitMessage(commit.message),
           description,
           status: 'completed',
-          tags: this.generateTags(commit.message, 'git-commit')
+          tags: this.generateTags(commit.message, 'git-commit'),
+          author: commit.author
         });
         
       } else if (commits.length > 1) {
@@ -138,11 +139,15 @@ export class GitHistoryGenerator extends BaseGenerator {
         const mainTopics = this.extractMainTopics(commits);
         const title = `Daily Development: ${mainTopics.join(', ')}`;
 
+        // Use the first commit's author for daily summaries
+        const primaryAuthor = commits[0]?.author;
+        
         tasks.push({
           title: title.length > 80 ? title.substring(0, 77) + '...' : title,
           description,
           status: 'completed',
-          tags: this.generateTags(mainTopics.join(' '), 'daily-summary')
+          tags: this.generateTags(mainTopics.join(' '), 'daily-summary'),
+          author: primaryAuthor
         });
       }
     });

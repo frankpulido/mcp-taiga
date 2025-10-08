@@ -73,12 +73,12 @@ node start-agent.js
 - **Smart roadmap parsing** from PROJECT_ROADMAP.md, TODO.md, etc.
 
 ### **📚 Multi-Source Task Generation**
-| Source | What It Creates |
-|--------|-----------------|
-| **Git History** | Epics from development phases, completed tasks with dates |
-| **Roadmap Files** | Future features, planned improvements, strategic goals |
-| **Code Analysis** | Technical debt, missing tests, security improvements |
-| **Figma** | UI implementation tasks *(Phase 4)* |
+| Source | What It Creates | Status |
+|--------|-----------------|--------|
+| **Git History** | Epics from development phases, completed tasks with dates | ✅ Active |
+| **Roadmap Files** | Phases → Epics, Features → User Stories, TODOs → Tasks | ✅ Active |
+| **Code Analysis** | Technical debt, missing tests, security improvements | ✅ **Enhanced** |
+| **Figma** | UI implementation tasks | 📋 Phase 4 |
 
 ### **🏗️ Project Creation & Management**
 - **Interactive project creation** with smart defaults
@@ -146,7 +146,169 @@ node start-agent.js
 
 ---
 
-## 🏗️ **Architecture**
+## 📝 **RoadmapGenerator Details**
+
+The **RoadmapGenerator** is a powerful parser that transforms your planning documents into structured Taiga tasks.
+
+### **Supported File Types**
+- `PROJECT_ROADMAP.md`
+- `ROADMAP.md`
+- `TODO.md`
+- `FEATURES.md`
+- Any custom markdown planning document
+
+### **What It Extracts**
+
+#### **1. Phases → Epics**
+```markdown
+### ✅ Phase 1: Foundation Development
+**Goal:** Build core authentication system
+**Timeline:** Week 1-2
+- User registration
+- Login/logout
+- Password reset
+```
+➡️ Creates **Epic** with title, goal, timeline, and bullet points as description
+
+#### **2. Features → User Stories**
+```markdown
+#### ✨ Advanced Search Filtering
+Implement multi-criteria search for products:
+- Filter by price range
+- Filter by category
+- Sort by relevance
+```
+➡️ Creates **User Story** with feature title and implementation details
+
+#### **3. Action Items → Tasks**
+```markdown
+- [ ] Add unit tests for authentication
+- [x] Implement OAuth integration
+- TODO: Refactor database queries
+```
+➡️ Creates individual **Tasks** with proper status (completed vs new)
+
+### **Status Recognition**
+| Indicator | Taiga Status |
+|-----------|-------------|
+| ✅ or `[x]` | Completed |
+| 🚧 or `WIP` | In Progress |
+| Default | New |
+
+### **Smart Parsing Features**
+- ✅ **Markdown Cleanup**: Removes formatting (`**bold**`, `*italic*`, `` `code` ``)
+- ✅ **Code Block Extraction**: Includes technical details from code blocks
+- ✅ **Bullet Point Processing**: Converts lists into task descriptions
+- ✅ **Title Sanitization**: Limits to 100 chars (Taiga constraint)
+- ✅ **Intelligent Limits**: Caps at 15 features, 20 tasks to avoid overwhelming
+
+### **Test Results**
+Tested on `ROADMAP_WARP_FRANK.md` (this project):
+```
+📊 Extraction Results:
+✅ 8 Epics (Phases)
+✅ 15 User Stories (Features)
+✅ 20 Tasks (Action Items)
+━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Total: 43 items parsed successfully
+```
+
+### **Usage Tips**
+💡 **Structure your roadmap with clear headers**:
+```markdown
+### Phase 1: Foundation
+#### Feature: User Authentication
+- [ ] Task: Implement login
+```
+
+💡 **Use status emojis** for automatic status detection:
+```markdown
+### ✅ Phase 1: Completed Phase
+### 🚧 Phase 2: In Progress
+### Phase 3: Future Phase
+```
+
+💡 **Include goals and timelines** for richer epic descriptions:
+```markdown
+### Phase 2: API Development
+**Goal:** Build RESTful API
+**Timeline:** 2 weeks
+```
+
+---
+
+## 🔍 **CodeReviewGenerator Details**
+
+The **CodeReviewGenerator** analyzes your codebase to identify technical debt and create improvement tasks.
+
+### **What It Analyzes**
+
+#### **1. Test Coverage**
+- 🔍 Scans for files without corresponding tests
+- 📁 Detects missing test directories
+- ✅ Creates "As a developer, I would like comprehensive testing infrastructure so that I can ensure code quality" User Stories
+- 🎨 Individual tasks for each file needing tests
+
+#### **2. Documentation Gaps** 
+- 🔍 Finds files lacking JSDoc/PHPDoc/docstrings
+- 📁 Scans for inadequate inline documentation
+- ✅ Creates "As a developer, I would like comprehensive code documentation so that new team members can understand the codebase quickly"
+- 🎨 Individual documentation tasks per file
+
+#### **3. Security Analysis**
+- 🔍 Detects hardcoded credentials, API keys
+- 🚫 Identifies potential SQL injection risks
+- ⚠️ Scans for dangerous eval() usage
+- 🔐 Creates security-focused User Stories and remediation tasks
+
+#### **4. Code Quality**
+- 📈 Identifies overly complex functions (>50 lines)
+- 🔄 Suggests refactoring opportunities
+- ✅ Creates "As a maintainer, I would like complex functions refactored so that code is easier to maintain"
+
+### **Framework-Specific Intelligence**
+
+| Framework | Specialized Tasks Generated |
+|-----------|----------------------------|
+| **Laravel** | Implement Laravel Policies, Add Form Request Validation |
+| **React** | Add PropTypes/TypeScript validation, Component testing |
+| **Node.js** | API security, middleware patterns |
+| **Generic** | Universal code quality improvements |
+
+### **Agile Compliance 🆕**
+
+**Proper User Story Format:**
+```
+👥 User Story: "As a [role], I would like to [goal] so that [benefit]"
+🎨 Tasks: "Add tests for UserController.php", "Document AuthService.php" 
+📝 Source: "Code Review Analysis"
+📁 Files: "/path/to/specific/files.php"
+```
+
+### **Project Isolation 🚫**
+
+**Prevents Cross-Contamination:**
+- ✅ Only scans specified project directory
+- 🚫 Excludes backup directories (`*backup 1`, `*backup 2`, `.backup`)
+- 🛡️ Validates project boundaries before analysis
+- 📂 Path validation prevents scanning wrong projects
+
+### **Test Results**
+Tested on mcpTAIGA project:
+```
+📊 Analysis Results:
+✅ 20 source files scanned
+✅ 4,233 lines of code analyzed
+✅ Project boundaries respected
+✅ Zero backup directory contamination
+✅ 1 User Story (Test Infrastructure)
+✅ 5 Tasks (Documentation improvements)
+✅ 100% Agile format compliance
+```
+
+---
+
+## 🏠 **Architecture**
 
 ```
 Universal Taiga Agent
@@ -157,8 +319,8 @@ Universal Taiga Agent
 │
 ├── 🏭 Task Generators
 │   ├── GitHistoryGenerator ✅
-│   ├── RoadmapGenerator (Phase 3)
-│   ├── CodeReviewGenerator (Phase 3)
+│   ├── RoadmapGenerator ✅
+│   ├── CodeReviewGenerator ✅
 │   └── FigmaGenerator (Phase 4)
 │
 ├── 🔄 MCP Server Management
@@ -218,6 +380,33 @@ git commit -m "Started API refactor TG-45 #in-progress"
 
 ---
 
+## 🛠️ **Utilities**
+
+Powerful maintenance tools for managing your Taiga projects:
+
+### **Bulk Task Assignment** (`npm run bulk-assign`)
+Automatically assigns all unassigned tasks in a project.
+
+**Perfect for:**
+- ✅ Fixing existing projects with unassigned tasks
+- ✅ Solo projects - assign everything to yourself
+- ✅ Post-migration cleanup
+- ✅ Quick project organization
+
+**Features:**
+- Interactive project selection
+- Preview before making changes
+- Rate-limited for API safety
+- Detailed success reporting
+
+```bash
+npm run bulk-assign
+```
+
+📖 **Full documentation**: See `utils/README.md`
+
+---
+
 ## 🗺️ **Roadmap**
 
 ### **✅ Completed**
@@ -226,10 +415,13 @@ git commit -m "Started API refactor TG-45 #in-progress"
 - ✅ **Project creation** with interactive flow
 - ✅ **Git history analysis** and task generation
 - ✅ **Server lifecycle management**
+- ✅ **RoadmapGenerator** (Phase 3.1) - Parses PROJECT_ROADMAP.md, TODO.md, FEATURES.md
+- ✅ **CodeReviewGenerator** (Phase 3.2) - Analyzes code quality, security, test coverage
+- ✅ **Solo assignment** (Phase 3.2.1) - Auto-assign tasks in single-member projects
+- ✅ **Bulk assignment utility** - Fix unassigned tasks in existing projects
 
 ### **🚧 In Progress**
-- 🚧 **Phase 3**: RoadmapGenerator & CodeReviewGenerator
-- 🚧 **Documentation**: API docs and integration guides
+- 🚧 **Phase 3.3**: DocumentationGenerator for missing docs
 - 🚧 **Testing**: Comprehensive test suite
 
 ### **📋 Planned**
@@ -260,6 +452,23 @@ git commit -m "Started API refactor TG-45 #in-progress"
 
 🔗 **See it live**: [AppointmentManager Taiga Board](https://tree.taiga.io/project/frankpulido-appointment-manager/)
 
+### **MCP Taiga (Self-Management)**
+
+**Challenge**: Managing the Universal Taiga Agent's own development with proper task organization.
+
+**Solution**: Used the agent on itself!
+
+**Results**:
+- ✅ **11 epics** from phases and git history
+- ✅ **5 user stories** for key features  
+- ✅ **27 tasks** from roadmap, git, and code review
+- ✅ **100% task assignment** (solo developer auto-assignment)
+- ✅ **Clean titles** (improved emoji removal)
+
+**Dogfooding success**: The tool manages its own development perfectly! 🎊
+
+🔗 **See it live**: [MCP Taiga Project Board](https://tree.taiga.io/project/frankpulido-mcp-taiga/)
+
 ---
 
 ## 🤝 **Contributing**
@@ -284,7 +493,7 @@ export class YourGenerator extends BaseGenerator {
 ```
 
 ### **Areas for Contribution**
-- 🔧 **New generators** (Roadmap, CodeReview, Figma)
+- 🔧 **New generators** (CodeReview, Documentation, Figma)
 - 🎨 **Framework templates** (Django, Rails, Go, Rust)
 - 🌍 **Translations** (currently ES + EN)
 - 🧪 **Testing** (unit and integration tests)

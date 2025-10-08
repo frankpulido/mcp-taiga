@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
+    "agent": "node start-agent.js",
+    "bulk-assign": "node utils/bulk-assign-tasks.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
