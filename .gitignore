@@ -30,3 +30,9 @@ logs
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Documentation (may contain sensitive info)
+docs/notion/
+docs/api-docs/
+docs/external/
+!docs/README.md
